@@ -23,7 +23,7 @@
 // version as integer of the form: (major*100 + minor)*100 + patch.
 #cmakedefine MVOX_VERSION @MVox_VERSION@
 
-// version string of the form "3.3" or "3.3.1".
+// version string of the form "3.2" or "3.2.1".
 #cmakedefine MVOX_VERSION_STRING "@MVox_VERSION_STRING@"
 
 #define MVOX_VERSION_MAJOR "@MVox_VERSION_MAJOR@"
@@ -31,8 +31,5 @@
 #define MVOX_VERSION_PATCH "@MVox_VERSION_PATCH@"
 
 #cmakedefine MVOX_DEBUG
-
-// Description of the git commit used to build MVox
-#cmakedefine MVOX_GIT_STRING "@MVox_GIT_STRING@"
 
 #endif // INCLUDE_MVOX_CONFIG_H

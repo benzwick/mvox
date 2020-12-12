@@ -11,19 +11,6 @@ if (${PROJECT_SOURCE_DIR} STREQUAL ${PROJECT_BINARY_DIR})
     "MVox does not support in-source CMake builds at this time.")
 endif (${PROJECT_SOURCE_DIR} STREQUAL ${PROJECT_BINARY_DIR})
 
-string(TOUPPER "${PROJECT_NAME}" PROJECT_NAME_UC)
-set(${PROJECT_NAME_UC}_VERSION_STRING ${${PROJECT_NAME}_VERSION})
-if (EXISTS ${PROJECT_SOURCE_DIR}/.git)
-   execute_process(
-     COMMAND git describe --all --long --abbrev=40 --dirty --always
-     WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
-     OUTPUT_VARIABLE ${PROJECT_NAME_UC}_GIT_STRING
-     ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
-endif()
-if (NOT ${PROJECT_NAME_UC}_GIT_STRING)
-   set(${PROJECT_NAME_UC}_GIT_STRING "(unknown)")
-endif()
-
 # MVOX_DEBUG
 if (CMAKE_BUILD_TYPE MATCHES "Debug|debug|DEBUG")
   set(MVox_DEBUG ON)
