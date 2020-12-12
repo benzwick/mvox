@@ -17,7 +17,7 @@
 * along with MVox.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "mvox.h"
+#include "mvox.hpp"
 
 #include <fstream>
 #include <iostream>
