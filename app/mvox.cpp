@@ -19,17 +19,11 @@
 
 #include "mvox.h"
 
-#include <string.h>
-
 #include <fstream>
 #include <iostream>
 
 #include <mfem.hpp>
 #include <itkImageFileReader.h>
-
-const char *file_ext(const char *filename);
-
-void save_mesh(mfem::Mesh &mesh, const char *filename);
 
 int main(int argc, char *argv[])
 {
@@ -362,43 +356,4 @@ int main(int argc, char *argv[])
    std::cout << "Success!" << std::endl;
 
    return 0;
-}
-
-/// Returns a pointer to the extension of `filename`.
-const char *file_ext(const char *filename)
-{
-   const char *dot = strrchr(filename, '.');
-   if (!dot || dot == filename)
-   {
-      return "";
-   }
-   else
-   {
-      return dot + 1;
-   }
-}
-
-/// Save `mesh` depending on the `filename` extension.
-void save_mesh(mfem::Mesh &mesh, const char *filename)
-{
-   std::ofstream ofs(filename, std::ofstream::out);
-   ofs.precision(14);
-   if (strcmp(file_ext(filename), "vtk") == 0)
-   {
-      mesh.PrintVTK(ofs);
-   }
-   else if (strcmp(file_ext(filename), "vtu") == 0)
-   {
-      // NOTE: Use PrintVTK not PrintVTU because duplicate nodes -> large file size
-      // TODO: strip the file extension otherwise filename.vtu.vtu
-      mesh.PrintVTU(filename, mfem::VTKFormat::BINARY, false, 0, false);
-   }
-   else if (strcmp(file_ext(filename), "mesh") == 0) // MFEM mesh
-   {
-      mesh.Print(ofs);
-   }
-   else
-   {
-      MFEM_ABORT( "Invalid file extension or unkown output file type: " << filename );
-   }
 }

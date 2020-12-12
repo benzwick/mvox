@@ -79,10 +79,29 @@ configure_file(config/config.h.in config/config.h @ONLY)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 # ------------------------------------------------------------------------------
-# Executables
+# Project Library
 
-add_executable(mvox mvox.cpp)
-target_link_libraries(mvox ${ITK_LIBRARIES} ${MFEM_LIBRARIES})
+add_library(mvox_library STATIC
+    src/fileutil.cpp
+    src/mfemutil.cpp
+)
+
+target_include_directories(mvox_library
+    PUBLIC
+        ${PROJECT_SOURCE_DIR}/include
+)
+
+# ------------------------------------------------------------------------------
+# Project Executables
+
+# bin/mvox
+add_executable(mvox app/mvox.cpp)
+target_link_libraries(mvox
+    mvox_library
+    ${ITK_LIBRARIES}
+    ${MFEM_LIBRARIES}
+)
+
 install(TARGETS mvox RUNTIME)
 
 # ------------------------------------------------------------------------------
@@ -91,6 +110,7 @@ install(TARGETS mvox RUNTIME)
 message(STATUS "****************************************************************************")
 message(STATUS "* MVox was configured as follows...")
 
+# MVox
 message(STATUS "* Build type: CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
 message(STATUS "* Version: ${MVOX_VERSION_STRING}")
 message(STATUS "* Git string: ${MVOX_GIT_STRING}")

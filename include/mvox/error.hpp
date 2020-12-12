@@ -17,13 +17,6 @@
 * along with MVox.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef INCLUDE_MVOX_H
-#define INCLUDE_MVOX_H
-
-#include "config/config.h"
-
 // Error and warning messages
 #define MVOX_ERROR(msg)   std::cout << "***ERROR: "   << msg << std::endl;
 #define MVOX_WARNING(msg) std::cout << "***WARNING: " << msg << std::endl;
-
-#endif // INCLUDE_MVOX_H
