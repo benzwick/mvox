@@ -83,6 +83,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 add_executable(mvox mvox.cpp)
 target_link_libraries(mvox ${ITK_LIBRARIES} ${MFEM_LIBRARIES})
+install(TARGETS mvox RUNTIME)
 
 # ------------------------------------------------------------------------------
 # Information

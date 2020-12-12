@@ -55,6 +55,7 @@ Configure and make MVox in the
     cd build
     cmake -DMFEM_DIR=/opt/mfem/mfem-4.2 ../mvox
     make
+    make install
 
 The `MFEM_DIR` variable is optional
 and can be used to specify the location
