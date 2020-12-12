@@ -81,12 +81,17 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 # ------------------------------------------------------------------------------
 # Project Library
 
-add_library(mvox_library STATIC
+add_library(libmvox STATIC
     src/fileutil.cpp
     src/mfemutil.cpp
 )
 
-target_include_directories(mvox_library
+# To avoid conflict between the executable and the library
+# we call them mvox and libmvox but CMake prepends lib so
+# we remove the prefix here.
+set_target_properties(libmvox PROPERTIES PREFIX "")
+
+target_include_directories(libmvox
     PUBLIC
         ${PROJECT_SOURCE_DIR}/include
 )
@@ -97,7 +102,7 @@ target_include_directories(mvox_library
 # bin/mvox
 add_executable(mvox app/mvox.cpp)
 target_link_libraries(mvox
-    mvox_library
+    libmvox
     ${ITK_LIBRARIES}
     ${MFEM_LIBRARIES}
 )
