@@ -25,11 +25,27 @@
 
 void save_mesh(mfem::Mesh &mesh, const char *filename)
 {
-   std::ofstream ofs(filename, std::ofstream::out);
-   ofs.precision(14);
+   // Create ouput file stream
+   std::ostream *ofs;
+   if (strcmp(file_ext(filename), "gz") == 0) // compressed MFEM mesh
+   {
+#ifdef MFEM_USE_ZLIB
+      // See https://github.com/mfem/mfem/pull/638/files
+      ofs = new mfem::ofgzstream(filename, "zwb9");
+#else
+      MFEM_ABORT( "Cannot compress file because MFEM was built without ZLIB" );
+#endif
+   }
+   else
+   {
+      ofs = new std::ofstream (filename, std::ofstream::out);
+   }
+   ofs->precision(14);
+
+   // Write the mesh to output file stream
    if (strcmp(file_ext(filename), "vtk") == 0)
    {
-      mesh.PrintVTK(ofs);
+      mesh.PrintVTK(*ofs);
    }
    else if (strcmp(file_ext(filename), "vtu") == 0)
    {
@@ -39,10 +55,16 @@ void save_mesh(mfem::Mesh &mesh, const char *filename)
    }
    else if (strcmp(file_ext(filename), "mesh") == 0) // MFEM mesh
    {
-      mesh.Print(ofs);
+      mesh.Print(*ofs);
+   }
+   else if (strcmp(file_ext(filename), "gz") == 0) // compressed MFEM mesh
+   {
+      mesh.Print(*ofs);
    }
    else
    {
       MFEM_ABORT( "Invalid file extension or unkown output file type: " << filename );
    }
+
+   delete ofs;
 }
