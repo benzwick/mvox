@@ -66,8 +66,16 @@ of the MFEM library.
 MVox is a CLI program.
 For instructions on how to use MVox type `mvox --help`.
 
-Example scripts and input data files can be found
+TODO: Example scripts and input data files can be found
 in the [examples](examples) directory.
+
+To create a mesh and symmetric tensors grid function:
+
+    mvox -imask brain_mask.nrrd -iattr label.nrrd -itensor dti.nrrd -omesh mesh.mesh -sym -otensor dti.gf.gz
+
+To view a tensor components using GLVis:
+
+    glvis -m mesh.mesh -g dti.gf.gz -gc 0
 
 ## Copying
 
