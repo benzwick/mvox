@@ -21,12 +21,16 @@
 
 #include <fstream>
 #include <iostream>
+#include <limits>
 
 #include <mfem.hpp>
 #include <itkImageFileReader.h>
 
 int main(int argc, char *argv[])
 {
+   // Constants
+   constexpr auto output_precision = std::numeric_limits<double>::max_digits10;
+
    // ----------------------------------------------------------------------
    // Initialize
 
@@ -67,12 +71,15 @@ int main(int argc, char *argv[])
    // ----------------------------------------------------------------------
    // Options
 
-   const char *box_file = "";        // box mesh output filename
-   const char *output_file = "";     // voxelized mesh output filename
-   const char *masks_file = "";      // input masks filename
-   const char *attributes_file = ""; // input attributes filename
+   const char *box_ofile = "";        // box mesh output filename
+   const char *mesh_ofile = "";       // voxelized mesh output filename
+   const char *tensors_ofile = "";    // output tensors filename
+   const char *masks_ifile = "";      // input masks filename
+   const char *attributes_ifile = ""; // input attributes filename
+   const char *tensors_ifile = "";    // input tensors filename
 
    bool visualization = false;
+   bool symmetric = false;
 
    const int dim = 3;
 
@@ -92,33 +99,54 @@ int main(int argc, char *argv[])
    mfem::OptionsParser args(argc, argv);
 
    // Files
-   args.AddOption(&output_file, "-o", "--output",
+   args.AddOption(&mesh_ofile,
+                  "-omesh", "--output-mesh",
                   "Output mesh file to use (VTK or MFEM format).");
-   args.AddOption(&box_file, "-b", "--box-output",
+   args.AddOption(&box_ofile,
+                  "-obox", "--output-box",
                   "Output bounding box mesh file to use (VTK or MFEM format).");
-   args.AddOption(&masks_file, "-m", "--masks",
+   args.AddOption(&tensors_ofile,
+                  "-otensor", "--output-tensors",
+                  "Output tensors file to use (MFEM format).");
+   args.AddOption(&masks_ifile,
+                  "-imask", "--input-mask",
                   "Masks file to use (NRRD format).");
-   args.AddOption(&attributes_file, "-a", "--attributes",
+   args.AddOption(&attributes_ifile,
+                  "-iattr", "--input-attributes",
                   "Attributes file to use (NRRD format).");
+   args.AddOption(&tensors_ifile,
+                  "-itensor", "--input-tensors",
+                  "Tensors file to use (NRRD format).");
+   args.AddOption(&symmetric,
+                  "-sym", "--symmetric-tensors",
+                  "-no-sym", "--no-symmetric-tensors",
+                  "Enable or disable symmetric tensor output.");
 
    // Image parameters
-   args.AddOption(&nx, "-nx", "--num-x-voxels",
+   args.AddOption(&nx,
+                  "-nx", "--num-x-voxels",
                   "Number of voxels along x axis.");
-   args.AddOption(&ny, "-ny", "--num-y-voxels",
+   args.AddOption(&ny,
+                  "-ny", "--num-y-voxels",
                   "Number of voxels along y axis.");
-   args.AddOption(&nz, "-nz", "--num-z-voxels",
+   args.AddOption(&nz,
+                  "-nz", "--num-z-voxels",
                   "Number of voxels along z axis.");
 
-   args.AddOption(&vx, "-vx", "--voxel-x-spacing",
+   args.AddOption(&vx,
+                  "-vx", "--voxel-x-spacing",
                   "Voxel spacing along x axis.");
-   args.AddOption(&vy, "-vy", "--voxel-y-spacing",
+   args.AddOption(&vy,
+                  "-vy", "--voxel-y-spacing",
                   "Voxel spacing along y axis.");
-   args.AddOption(&vz, "-vz", "--voxel-z-spacing",
+   args.AddOption(&vz,
+                  "-vz", "--voxel-z-spacing",
                   "Voxel spacing along z axis.");
 
    // Miscellaneous options
-   args.AddOption(&visualization, "-vis", "--visualization", "-no-vis",
-                  "--no-visualization",
+   args.AddOption(&visualization,
+                  "-vis", "--visualization",
+                  "-no-vis", "--no-visualization",
                   "Enable or disable GLVis visualization.");
 
    args.Parse();
@@ -129,7 +157,7 @@ int main(int argc, char *argv[])
       std::cout << "\nMVox is a tool for generating volume meshes from image data.\n" << std::endl;
 
       std::cout << "Input:  NRRD files with masks and (optionally) attribute attributes (segmentation)" << std::endl;
-      std::cout << "Output: VTK mesh file with attribute attributes" << std::endl;
+      std::cout << "Output: VTK or MFEM mesh file with attributes" << std::endl;
    }
 
    // Check args and exit on error
@@ -147,7 +175,7 @@ int main(int argc, char *argv[])
    // Read image input files
 
    // If only one of masks or attributes file is specified use that as both.
-   if (strcmp(masks_file, "") == 0 && strcmp(attributes_file, "") == 0)
+   if (strcmp(masks_ifile, "") == 0 && strcmp(attributes_ifile, "") == 0)
    {
       std::cout << "Missing required option: --masks or --attributes (or both)\n" << std::endl;
       args.PrintUsage(std::cout);
@@ -155,38 +183,58 @@ int main(int argc, char *argv[])
    }
    else
    {
-      if (strcmp(masks_file, "") == 0)
+      if (strcmp(masks_ifile, "") == 0)
       {
          MVOX_WARNING( "Masks file not specified (using attributes file instead)." );
-         masks_file = attributes_file;
+         masks_ifile = attributes_ifile;
       }
-      else if (strcmp(attributes_file, "") == 0)
+      else if (strcmp(attributes_ifile, "") == 0)
       {
          MVOX_WARNING( "Attributes file not specified (using masks file instead)." );
-         attributes_file = masks_file;
+         attributes_ifile = masks_ifile;
       }
    }
-   std::cout << "Masks file:      " << masks_file << std::endl;
-   std::cout << "Attributes file: " << masks_file << std::endl;
+   std::cout << "Masks file:      " << masks_ifile << std::endl;
+   std::cout << "Attributes file: " << masks_ifile << std::endl;
 
    // Define ITK types
-   using ImageType = itk::Image<short,3>;
-   using ImageFileReaderType = itk::ImageFileReader<ImageType>;
+   // Scalar images
+   using ShortImageType = itk::Image<short,3>;
+   using ShortImageFileReaderType = itk::ImageFileReader<ShortImageType>;
+   // Tensor images
+   using TensorPixelType = itk::DiffusionTensor3D<float>;
+   using TensorImageType = itk::Image<TensorPixelType,3>;
+   using TensorImageFileReaderType = itk::ImageFileReader<TensorImageType>;
 
    // Read masks
-   ImageFileReaderType::Pointer masks_reader = ImageFileReaderType::New();
-   std::cout << "Reading NRRD masks file:      '" << masks_file << "'... " << std::flush;
-   masks_reader->SetFileName(masks_file);
+   ShortImageFileReaderType::Pointer masks_reader = ShortImageFileReaderType::New();
+   std::cout << "Reading NRRD masks file:      '" << masks_ifile << "'... " << std::flush;
+   masks_reader->SetFileName(masks_ifile);
    masks_reader->Update();
-   ImageType::Pointer masks_image = masks_reader->GetOutput();
+   ShortImageType::Pointer masks_image = masks_reader->GetOutput();
    std::cout << "done." << std::endl;
 
    // Read attributes
-   ImageFileReaderType::Pointer attributes_reader = ImageFileReaderType::New();
-   std::cout << "Reading NRRD attributes file: '" << attributes_file << "'... " << std::flush;
-   attributes_reader->SetFileName(attributes_file);
+   ShortImageFileReaderType::Pointer attributes_reader = ShortImageFileReaderType::New();
+   std::cout << "Reading NRRD attributes file: '" << attributes_ifile << "'... " << std::flush;
+   attributes_reader->SetFileName(attributes_ifile);
    attributes_reader->Update();
-   ImageType::Pointer attributes_image = attributes_reader->GetOutput();
+   ShortImageType::Pointer attributes_image = attributes_reader->GetOutput();
+   std::cout << "done." << std::endl;
+
+   // TODO:
+   // Read scalars
+   // Read vectors
+
+   // Read tensors (full 3x3 or symmetric matrix with 6 components in nrrd)
+   // NOTE: image format: http://teem.sourceforge.net/nrrd/format.html#kinds
+   // "3D-symmetric-matrix"  6  Unique components of a 3D symmetric matrix: Mxx Mxy Mxz Myy Myz Mzz
+   // "3D-matrix"            9  Components of 3D matrix:                    Mxx Mxy Mxz Myx Myy Myz Mzx Mzy Mzz
+   TensorImageFileReaderType::Pointer tensors_reader = TensorImageFileReaderType::New();
+   std::cout << "Reading NRRD tensors file: '" << tensors_ifile << "'... " << std::flush;
+   tensors_reader->SetFileName(tensors_ifile);
+   tensors_reader->Update();
+   TensorImageType::Pointer tensors_image = tensors_reader->GetOutput();
    std::cout << "done." << std::endl;
 
    // ----------------------------------------------------------------------
@@ -195,14 +243,14 @@ int main(int argc, char *argv[])
    std::cout << "\nMasks image information:" << std::endl;
 
    // Image size (number of voxels in x, y, z directions)
-   ImageType::SizeType size = masks_image->GetLargestPossibleRegion().GetSize();
+   ShortImageType::SizeType size = masks_image->GetLargestPossibleRegion().GetSize();
    std::cout << "Size: " << size << std::endl;
    if (nx == 0) nx = size[0];
    if (ny == 0) ny = size[1];
    if (nz == 0) nz = size[2];
 
    // Image spacing (voxel size)
-   ImageType::SpacingType spacing = masks_image->GetSpacing();
+   ShortImageType::SpacingType spacing = masks_image->GetSpacing();
    std::cout << "Spacing: " << spacing << std::endl;
    if (vx == 0) vx = spacing[0];
    if (vy == 0) vy = spacing[1];
@@ -214,6 +262,9 @@ int main(int argc, char *argv[])
    double sz = vz * nz;
    std::cout << "Physical dimensions: "
              << "[" << sx << ", " << sy << ", " << sz << "]\n" << std::endl;
+
+   // Total number of voxels
+   int num_voxels = nx * ny * nz;
 
    // ----------------------------------------------------------------------
    // Create box mesh
@@ -228,10 +279,10 @@ int main(int argc, char *argv[])
    mesh.PrintInfo();
 
    // Save box mesh to file
-   if (strcmp(box_file, "") != 0)
+   if (strcmp(box_ofile, "") != 0)
    {
-      std::cout << "Saving mesh to file: '" << box_file << "'... " << std::flush;
-      save_mesh(mesh, box_file);
+      std::cout << "Saving mesh to file: '" << box_ofile << "'... " << std::flush;
+      save_mesh(mesh, box_ofile);
       std::cout << "done." << std::endl;
    }
 
@@ -240,6 +291,7 @@ int main(int argc, char *argv[])
 
    short* masks = masks_image->GetBufferPointer();
    short* attributes = attributes_image->GetBufferPointer();
+   TensorPixelType* tensors = tensors_image->GetBufferPointer();
 
    std::cout << "Setting element attributes and counting "
              << "number of elements to keep... " << std::flush;
@@ -285,7 +337,7 @@ int main(int argc, char *argv[])
    std::cout << "done." << std::endl;
 
    std::cout << "Creating elements... " << std::flush;
-   for (int i = 0, j = 0; i < mesh.GetNE(); i++)
+   for (int i = 0, j = 0; i < num_voxels; i++)
    {
       if (masks[i] > 0)
       {
@@ -317,10 +369,85 @@ int main(int argc, char *argv[])
    vox.PrintInfo();
 
    // Save voxelized mesh to file
-   if (strcmp(output_file, "") != 0)
+   if (strcmp(mesh_ofile, "") != 0)
    {
-      std::cout << "Saving voxelized mesh to file: '" << output_file << "'... " << std::flush;
-      save_mesh(vox, output_file);
+      std::cout << "Saving voxelized mesh to file: '" << mesh_ofile << "'... " << std::flush;
+      save_mesh(vox, mesh_ofile);
+      std::cout << "done." << std::endl;
+   }
+
+   // ----------------------------------------------------------------------
+   // Tensors
+
+   // Define a finite element space on the mesh
+   int vdim = symmetric ? 6 : 9;
+   mfem::L2_FECollection tensors_fec(0, dim);
+   mfem::FiniteElementSpace tensors_fespace(&vox, &tensors_fec, vdim);
+
+   // Define grid functions for tensor components
+   mfem::GridFunction tensors_gf(&tensors_fespace);
+
+   std::cout << "Assigning tensor values... " << std::flush;
+   for (int vi = 0, ei = 0; vi < num_voxels; vi++)
+   {
+      if (masks[vi] > 0)
+      {
+         if (symmetric)
+         {
+            tensors_gf(tensors_fespace.DofToVDof(ei, 0)) = tensors[vi](0,0); // Mxx
+            tensors_gf(tensors_fespace.DofToVDof(ei, 1)) = tensors[vi](0,1); // Mxy
+            tensors_gf(tensors_fespace.DofToVDof(ei, 2)) = tensors[vi](0,2); // Mxz
+            tensors_gf(tensors_fespace.DofToVDof(ei, 3)) = tensors[vi](1,1); // Myy
+            tensors_gf(tensors_fespace.DofToVDof(ei, 4)) = tensors[vi](1,2); // Myz
+            tensors_gf(tensors_fespace.DofToVDof(ei, 5)) = tensors[vi](2,2); // Mzz
+            // Ensure that tensor is really symmetric
+            if (tensors_gf(tensors_fespace.DofToVDof(ei, 1)) != tensors[vi](1,0) ||
+                tensors_gf(tensors_fespace.DofToVDof(ei, 2)) != tensors[vi](2,0) ||
+                tensors_gf(tensors_fespace.DofToVDof(ei, 4)) != tensors[vi](2,1))
+            {
+               MFEM_ABORT("Tensor at voxel " << vi << " is not symmetric!");
+            }
+         }
+         else
+         {
+            tensors_gf(tensors_fespace.DofToVDof(ei, 0)) = tensors[vi](0,0); // Mxx
+            tensors_gf(tensors_fespace.DofToVDof(ei, 1)) = tensors[vi](0,1); // Mxy
+            tensors_gf(tensors_fespace.DofToVDof(ei, 2)) = tensors[vi](0,2); // Mxz
+            tensors_gf(tensors_fespace.DofToVDof(ei, 3)) = tensors[vi](1,0); // Myx
+            tensors_gf(tensors_fespace.DofToVDof(ei, 4)) = tensors[vi](1,1); // Myy
+            tensors_gf(tensors_fespace.DofToVDof(ei, 5)) = tensors[vi](1,2); // Myz
+            tensors_gf(tensors_fespace.DofToVDof(ei, 6)) = tensors[vi](2,0); // Mzx
+            tensors_gf(tensors_fespace.DofToVDof(ei, 7)) = tensors[vi](2,1); // Mzy
+            tensors_gf(tensors_fespace.DofToVDof(ei, 8)) = tensors[vi](2,2); // Mzz
+         }
+         ei++;
+      }
+   }
+   MFEM_ASSERT(ei == vox.GetNE(), "Mismatch between number of tensors and elements");
+
+   // Save tensors to file
+   if (strcmp(tensors_ofile, "") != 0)
+   {
+      std::cout << "Saving tensors to file: '" << tensors_ofile << "'... " << std::flush;
+
+      // Create ouput file stream
+      std::ostream *tofs;
+      if (strcmp(file_ext(tensors_ofile), "gz") == 0) // compressed MFEM mesh
+      {
+#ifdef MFEM_USE_ZLIB
+         // See https://github.com/mfem/mfem/pull/638/files
+         tofs = new mfem::ofgzstream(tensors_ofile, "zwb9");
+#else
+         MFEM_ABORT( "Cannot compress file because MFEM was built without ZLIB" );
+#endif
+      }
+      else
+      {
+         tofs = new std::ofstream (tensors_ofile, std::ofstream::out);
+      }
+      tofs->precision(output_precision);
+
+      tensors_gf.Save(*tofs);
       std::cout << "done." << std::endl;
    }
 
