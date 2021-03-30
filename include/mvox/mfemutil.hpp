@@ -21,3 +21,6 @@
 
 /// Save `mesh` depending on the `filename` extension.
 void save_mesh(mfem::Mesh &mesh, const char *filename);
+
+/// Save `gridfunction` depending on the `filename` extension.
+void save_gridfunction(mfem::GridFunction &gridfunction, const char *filename);

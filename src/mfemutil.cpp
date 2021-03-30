@@ -23,6 +23,9 @@
 
 #include "mvox/fileutil.hpp"    // file_ext
 
+// Constants
+constexpr auto output_precision = std::numeric_limits<double>::max_digits10;
+
 void save_mesh(mfem::Mesh &mesh, const char *filename)
 {
    // Create ouput file stream
@@ -40,7 +43,7 @@ void save_mesh(mfem::Mesh &mesh, const char *filename)
    {
       ofs = new std::ofstream (filename, std::ofstream::out);
    }
-   ofs->precision(14);
+   ofs->precision(output_precision);
 
    // Write the mesh to output file stream
    if (strcmp(file_ext(filename), "vtk") == 0)
@@ -65,6 +68,31 @@ void save_mesh(mfem::Mesh &mesh, const char *filename)
    {
       MFEM_ABORT( "Invalid file extension or unkown output file type: " << filename );
    }
+
+   delete ofs;
+}
+
+void save_gridfunction(mfem::GridFunction &gridfunction, const char *filename)
+{
+   // Create ouput file stream
+   std::ostream *ofs;
+   if (strcmp(file_ext(filename), "gz") == 0) // compressed MFEM mesh
+   {
+#ifdef MFEM_USE_ZLIB
+      // See https://github.com/mfem/mfem/pull/638/files
+      ofs = new mfem::ofgzstream(filename, "zwb9");
+#else
+      MFEM_ABORT( "Cannot compress file because MFEM was built without ZLIB" );
+#endif
+   }
+   else
+   {
+      ofs = new std::ofstream (filename, std::ofstream::out);
+   }
+   ofs->precision(output_precision);
+
+   // Write the gridfunction to output file stream
+   gridfunction.Save(*ofs);
 
    delete ofs;
 }

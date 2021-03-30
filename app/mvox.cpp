@@ -28,9 +28,6 @@
 
 int main(int argc, char *argv[])
 {
-   // Constants
-   constexpr auto output_precision = std::numeric_limits<double>::max_digits10;
-
    // ----------------------------------------------------------------------
    // Initialize
 
@@ -430,25 +427,7 @@ int main(int argc, char *argv[])
    if (strcmp(tensors_ofile, "") != 0)
    {
       std::cout << "Saving tensors to file: '" << tensors_ofile << "'... " << std::flush;
-
-      // Create ouput file stream
-      std::ostream *tofs;
-      if (strcmp(file_ext(tensors_ofile), "gz") == 0) // compressed MFEM mesh
-      {
-#ifdef MFEM_USE_ZLIB
-         // See https://github.com/mfem/mfem/pull/638/files
-         tofs = new mfem::ofgzstream(tensors_ofile, "zwb9");
-#else
-         MFEM_ABORT( "Cannot compress file because MFEM was built without ZLIB" );
-#endif
-      }
-      else
-      {
-         tofs = new std::ofstream (tensors_ofile, std::ofstream::out);
-      }
-      tofs->precision(output_precision);
-
-      tensors_gf.Save(*tofs);
+      save_gridfunction(tensors_gf, tensors_ofile);
       std::cout << "done." << std::endl;
    }
 
