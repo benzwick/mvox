@@ -424,6 +424,7 @@ int main(int argc, char *argv[])
       }
    }
    MFEM_ASSERT(ei == vox.GetNE(), "Mismatch between number of tensors and elements");
+   std::cout << "done." << std::endl;
 
    // Save tensors to file
    if (strcmp(tensors_ofile, "") != 0)
