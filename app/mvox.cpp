@@ -68,7 +68,6 @@ int main(int argc, char *argv[])
    // ----------------------------------------------------------------------
    // Options
 
-   const char *box_ofile = "";        // box mesh output filename
    const char *mesh_ofile = "";       // voxelized mesh output filename
    const char *tensors_ofile = "";    // output tensors filename
    const char *masks_ifile = "";      // input masks filename
@@ -99,9 +98,6 @@ int main(int argc, char *argv[])
    args.AddOption(&mesh_ofile,
                   "-omesh", "--output-mesh",
                   "Output mesh file to use (VTK or MFEM format).");
-   args.AddOption(&box_ofile,
-                  "-obox", "--output-box",
-                  "Output bounding box mesh file to use (VTK or MFEM format).");
    args.AddOption(&tensors_ofile,
                   "-otensor", "--output-tensors",
                   "Output tensors file to use (MFEM format).");
@@ -234,6 +230,11 @@ int main(int argc, char *argv[])
    TensorImageType::Pointer tensors_image = tensors_reader->GetOutput();
    std::cout << "done." << std::endl;
 
+   // Image data
+   short* masks = masks_image->GetBufferPointer();
+   short* attributes = attributes_image->GetBufferPointer();
+   TensorPixelType* tensors = tensors_image->GetBufferPointer();
+
    // ----------------------------------------------------------------------
    // Get information from *masks* image only
 
@@ -262,25 +263,24 @@ int main(int argc, char *argv[])
 
    // Total number of voxels
    int num_voxels = nx * ny * nz;
-
-   // ----------------------------------------------------------------------
-   // Create box mesh
-   // Similar to mfem::Mesh::Make3D in mfem/mesh/mesh.cpp
-
    // Number of vertices for the image box mesh (final number may be lower)
    int box_num_vertices = (nx+1) * (ny+1) * (nz+1);
 
+   // ----------------------------------------------------------------------
+   // Create voxelized mesh
+   // Similar to mfem::Mesh::Make3D in mfem/mesh/mesh.cpp
+
    std::cout << "Generating image mesh grid with: "
-             << box_num_vertices << " vertices... " << std::flush;
+             << box_num_vertices << " vertices." << std::endl;
 
-   // Initialize empty image grid box mesh with no elements
-   mfem::Mesh mesh(3, box_num_vertices, 0);
+   // Initialize voxelized mesh
+   mfem::Mesh vox(dim, box_num_vertices, 0);
 
+   // Set vertices and the corresponding coordinates for entire box
+   std::cout << "Adding vertices... " << std::flush;
    {
       int x, y, z;
       double coord[3];
-
-      // Set vertices and the corresponding coordinates
       for (z = 0; z <= nz; z++)
       {
          coord[2] = ((double) z / nz) * sz;
@@ -290,123 +290,75 @@ int main(int argc, char *argv[])
             for (x = 0; x <= nx; x++)
             {
                coord[0] = ((double) x / nx) * sx;
-               mesh.AddVertex(coord);
+               vox.AddVertex(coord);
             }
          }
       }
    }
    std::cout << "done." << std::endl;
 
+   // Set elements and the corresponding indices of vertices only if mask > 0
+   // using lexicographic ordering (i.e. sfc_ordering = false in Mesh::Make3D)
+   std::cout << "Adding elements... " << std::flush;
+   int ne_keep = 0;
+   int ne_discard = 0;
+   int num_bad_voxels = 0;
    {
-      // TODO: combine this loop with mask loop and add only required elements
-      // Set elements and the corresponding indices of vertices
-      // using lexicographic ordering (i.e. sfc_ordering = false in Mesh::Make3D)
-      std::cout << "Generating bounding box mesh with: "
-                << nx*ny*nz << " elements... " << std::flush;
-
-      int x, y, z;
+      int i, j, x, y, z;
       int ind[8];
-
 #define VTX(XC, YC, ZC) ((XC)+((YC)+(ZC)*(ny+1))*(nx+1))
-      for (z = 0; z < nz; z++)
+      for (i = 0, j = 0, z = 0; z < nz; z++)
       {
          for (y = 0; y < ny; y++)
          {
             for (x = 0; x < nx; x++)
             {
-               ind[0] = VTX(x  , y  , z  );
-               ind[1] = VTX(x+1, y  , z  );
-               ind[2] = VTX(x+1, y+1, z  );
-               ind[3] = VTX(x  , y+1, z  );
-               ind[4] = VTX(x  , y  , z+1);
-               ind[5] = VTX(x+1, y  , z+1);
-               ind[6] = VTX(x+1, y+1, z+1);
-               ind[7] = VTX(  x, y+1, z+1);
-               mesh.AddHex(ind, 1);
+               int mask = masks[i];
+               int attr = attributes[i];
+               if (mask > 0)
+               {
+                  if (attr < 1)
+                  {
+                     num_bad_voxels++;
+                     // We require the element attribute to be strictly positive
+                     // so enforce it by highlighting the invalid elements with a
+                     // value that is lower than the possible minimum input value.
+                     attr = SHRT_MIN - 1;
+                  }
+                  ind[0] = VTX(x  , y  , z  );
+                  ind[1] = VTX(x+1, y  , z  );
+                  ind[2] = VTX(x+1, y+1, z  );
+                  ind[3] = VTX(x  , y+1, z  );
+                  ind[4] = VTX(x  , y  , z+1);
+                  ind[5] = VTX(x+1, y  , z+1);
+                  ind[6] = VTX(x+1, y+1, z+1);
+                  ind[7] = VTX(  x, y+1, z+1);
+                  vox.AddHex(ind, 1);
+                  vox.SetAttribute(j, attr);
+                  j++;
+               }
+#if MVOX_DEBUG
+               if (mask <= 0)
+               {
+                  std::cout << i << " " << mask << " : ";
+               }
+#endif
+               i++;
             }
          }
       }
-      mesh.Finalize();
-      std::cout << "done." << std::endl;
-   }
-
-   std::cout << "\nBounding box mesh information:" << std::endl;
-   mesh.PrintInfo();
-
-   // Save box mesh to file
-   if (strcmp(box_ofile, "") != 0)
-   {
-      std::cout << "Saving mesh to file: '" << box_ofile << "'... " << std::flush;
-      save_mesh(mesh, box_ofile);
-      std::cout << "done." << std::endl;
-   }
-
-   // ----------------------------------------------------------------------
-   // Create voxelized mesh
-
-   short* masks = masks_image->GetBufferPointer();
-   short* attributes = attributes_image->GetBufferPointer();
-   TensorPixelType* tensors = tensors_image->GetBufferPointer();
-
-   std::cout << "Setting element attributes and counting "
-             << "number of elements to keep... " << std::flush;
-   int ne_keep = 0;
-   int ne_discard = 0;
-   int num_bad_voxels = 0;
-   for (int i = 0; i < mesh.GetNE(); i++)
-   {
-      int mask = masks[i];
-      int mat = attributes[i];
-      if (mask > 0 && mat < 1)
-      {
-         num_bad_voxels++;
-         // We require the element attribute to be strictly positive
-         // so enforce it by highlighting the invalid elements with a
-         // value that is lower than the possible minimum input value.
-         mat = SHRT_MIN - 1;
-      }
-      mesh.SetAttribute(i, mat);
-      mask > 0 ? ne_keep++ : ne_discard++;
-#if MVOX_DEBUG
-      if (mask <= 0)
-      {
-         std::cout << i << " " << mask << " : ";
-      }
-#endif
+      ne_keep = j;
+      ne_discard = num_voxels - ne_keep;
    }
    std::cout << "done." << std::endl;
+
    if (num_bad_voxels > 0)
    {
       MVOX_WARNING( num_bad_voxels << " voxels have non-positive values." );
    }
 
-   // Initialize voxelized mesh
-   mfem::Mesh vox(dim, mesh.GetNV(), ne_keep);
-
-   // Copy the vertices
-   std::cout << "Copying vertices... " << std::flush;
-   for (int i = 0; i < mesh.GetNV(); i++)
-   {
-      vox.AddVertex(mesh.GetVertex(i));
-   }
-   std::cout << "done." << std::endl;
-
-   std::cout << "Creating elements... " << std::flush;
-   for (int i = 0, j = 0; i < num_voxels; i++)
-   {
-      if (masks[i] > 0)
-      {
-         vox.AddElement(mesh.GetElement(i)->Duplicate(&vox));
-         vox.SetAttribute(j, mesh.GetAttribute(i));
-         j++;
-      }
-   }
-   std::cout << "done." << std::endl;
-   std::cout << "Number of elements included: " << ne_keep << std::endl;
-   std::cout << "Number of elements excluded: " << ne_discard << std::endl;
-
-   // Free memory of the box mesh that is no longer required
-   mesh.Clear();
+   std::cout << "Number of voxels included: " << ne_keep << std::endl;
+   std::cout << "Number of voxels excluded: " << ne_discard << std::endl;
 
    std::cout << "Finalizing topology of voxelized mesh... " << std::flush;
    vox.FinalizeTopology();
