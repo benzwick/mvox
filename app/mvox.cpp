@@ -254,6 +254,14 @@ int main(int argc, char *argv[])
    if (vy == 0) vy = spacing[1];
    if (vz == 0) vz = spacing[2];
 
+   // Image directions (not the same as NRRD space directions)
+   ShortImageType::DirectionType direction = masks_image->GetDirection();
+   std::cout << "Direction:\n" << direction << std::endl;
+
+   // Image origin
+   ShortImageType::PointType image_origin = masks_image->GetOrigin();
+   std::cout << "Origin: " << image_origin << std::endl;
+
    // Physical size in x, y, z directions
    double sx = vx * nx;
    double sy = vy * ny;
@@ -276,20 +284,37 @@ int main(int argc, char *argv[])
    // Initialize voxelized mesh
    mfem::Mesh vox(dim, box_num_vertices, 0);
 
+   // Shift mesh origin by half a voxel
+   // See https://itk.org/ItkSoftwareGuide.pdf, section 4.1.4
+   ShortImageType::PointType mesh_origin;
+   {
+      using MatrixType = itk::Matrix<double, dim, dim>;
+      using VectorType = itk::Vector<double, dim>;
+      MatrixType spacing_matrix;
+      spacing_matrix.Fill(0.0);
+      spacing_matrix(0,0) = spacing[0];
+      spacing_matrix(1,1) = spacing[1];
+      spacing_matrix(2,2) = spacing[2];
+      VectorType offset;
+      offset.Fill(-0.5);
+      mesh_origin = image_origin + (direction * spacing_matrix * offset);
+   }
+
    // Set vertices and the corresponding coordinates for entire box
    std::cout << "Adding vertices... " << std::flush;
    {
       int x, y, z;
       double coord[3];
+#define COORD(I, O, D, S) (O[I] + D(I,0)*S[0]*x + D(I,1)*S[1]*y + D(I,2)*S[2]*z)
       for (z = 0; z <= nz; z++)
       {
-         coord[2] = ((double) z / nz) * sz;
          for (y = 0; y <= ny; y++)
          {
-            coord[1] = ((double) y / ny) * sy;
             for (x = 0; x <= nx; x++)
             {
-               coord[0] = ((double) x / nx) * sx;
+               coord[0] = COORD(0, mesh_origin, direction, spacing);
+               coord[1] = COORD(1, mesh_origin, direction, spacing);
+               coord[2] = COORD(2, mesh_origin, direction, spacing);
                vox.AddVertex(coord);
             }
          }
