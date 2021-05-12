@@ -265,12 +265,70 @@ int main(int argc, char *argv[])
 
    // ----------------------------------------------------------------------
    // Create box mesh
+   // Similar to mfem::Mesh::Make3D in mfem/mesh/mesh.cpp
 
-   std::cout << "Generating bounding box mesh with: "
-             << nx*ny*nz << " elements... " << std::flush;
-   mfem::Mesh mesh(nx, ny, nz, mfem::Element::HEXAHEDRON, false,
-                   sx, sy, sz, false);
+   // Number of vertices for the image box mesh (final number may be lower)
+   int box_num_vertices = (nx+1) * (ny+1) * (nz+1);
+
+   std::cout << "Generating image mesh grid with: "
+             << box_num_vertices << " vertices... " << std::flush;
+
+   // Initialize empty image grid box mesh with no elements
+   mfem::Mesh mesh(3, box_num_vertices, 0);
+
+   {
+      int x, y, z;
+      double coord[3];
+
+      // Set vertices and the corresponding coordinates
+      for (z = 0; z <= nz; z++)
+      {
+         coord[2] = ((double) z / nz) * sz;
+         for (y = 0; y <= ny; y++)
+         {
+            coord[1] = ((double) y / ny) * sy;
+            for (x = 0; x <= nx; x++)
+            {
+               coord[0] = ((double) x / nx) * sx;
+               mesh.AddVertex(coord);
+            }
+         }
+      }
+   }
    std::cout << "done." << std::endl;
+
+   {
+      // TODO: combine this loop with mask loop and add only required elements
+      // Set elements and the corresponding indices of vertices
+      // using lexicographic ordering (i.e. sfc_ordering = false in Mesh::Make3D)
+      std::cout << "Generating bounding box mesh with: "
+                << nx*ny*nz << " elements... " << std::flush;
+
+      int x, y, z;
+      int ind[8];
+
+#define VTX(XC, YC, ZC) ((XC)+((YC)+(ZC)*(ny+1))*(nx+1))
+      for (z = 0; z < nz; z++)
+      {
+         for (y = 0; y < ny; y++)
+         {
+            for (x = 0; x < nx; x++)
+            {
+               ind[0] = VTX(x  , y  , z  );
+               ind[1] = VTX(x+1, y  , z  );
+               ind[2] = VTX(x+1, y+1, z  );
+               ind[3] = VTX(x  , y+1, z  );
+               ind[4] = VTX(x  , y  , z+1);
+               ind[5] = VTX(x+1, y  , z+1);
+               ind[6] = VTX(x+1, y+1, z+1);
+               ind[7] = VTX(  x, y+1, z+1);
+               mesh.AddHex(ind, 1);
+            }
+         }
+      }
+      mesh.Finalize();
+      std::cout << "done." << std::endl;
+   }
 
    std::cout << "\nBounding box mesh information:" << std::endl;
    mesh.PrintInfo();
