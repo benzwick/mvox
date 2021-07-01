@@ -195,7 +195,7 @@ int main(int argc, char *argv[])
    using ShortImageType = itk::Image<short,3>;
    using ShortImageFileReaderType = itk::ImageFileReader<ShortImageType>;
    // Tensor images
-   using TensorPixelType = itk::DiffusionTensor3D<float>;
+   using TensorPixelType = itk::DiffusionTensor3D<double>;
    using TensorImageType = itk::Image<TensorPixelType,3>;
    using TensorImageFileReaderType = itk::ImageFileReader<TensorImageType>;
 
