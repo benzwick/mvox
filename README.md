@@ -6,7 +6,7 @@ MVox is a tool for generating finite element meshes from image data.
 
 Clone the repository using [Git](https://git-scm.com):
 
-    git clone https://gitlab.com/benzwick/mvox.git
+    git clone https://github.com/benzwick/mvox.git
 
 ## Installing
 
@@ -86,13 +86,13 @@ please consider adding the following citation:
 
 - Zwick, B.F. (2020)
   MVox Mesh Voxelizer.
-  Available at: https://gitlab.com/benzwick/mvox
+  Available at: https://github.com/benzwick/mvox
 
 BibTeX:
 
     @Misc{zwick_2020_mvox,
       author =   {Benjamin F. Zwick},
       title =    {{MVox} {M}esh {V}oxelizer},
-      howpublished = {\url{https://gitlab.com/benzwick/mvox}},
+      howpublished = {\url{https://github.com/benzwick/mvox}},
       year = 2020
     }
