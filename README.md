@@ -1,9 +1,5 @@
 # MVox Mesh Voxelizer
 
-[![pipeline status](https://gitlab.com/benzwick/mvox/badges/master/pipeline.svg)](https://gitlab.com/benzwick/mvox/-/commits/master)
-[![coverage report](https://gitlab.com/benzwick/mvox/badges/master/coverage.svg)](https://gitlab.com/benzwick/mvox/-/commits/master)
-[![documentation (placeholder)](https://img.shields.io/badge/docs-latest-blue.svg)](https://benzwick.gitlab.io/mvox/)
-
 MVox is a tool for generating finite element meshes from image data.
 
 ## Downloading
