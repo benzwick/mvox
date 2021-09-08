@@ -149,8 +149,9 @@ int main(int argc, char *argv[])
    {
       std::cout << "\nMVox is a tool for generating volume meshes from image data.\n" << std::endl;
 
-      std::cout << "Input:  NRRD files with masks and (optionally) attribute attributes (segmentation)" << std::endl;
-      std::cout << "Output: VTK or MFEM mesh file with attributes" << std::endl;
+      std::cout << "Input:  NRRD image files with mask and (optionally) attributes and tensors." << std::endl;
+      std::cout << "Output: MFEM or VTK mesh file with attributes "
+                << "and (optionally) MFEM grid function file with tensors." << std::endl;
    }
 
    // Check args and exit on error
