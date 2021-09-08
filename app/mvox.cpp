@@ -1,20 +1,11 @@
 /*
-* Copyright (C) 2020 Benjamin F. Zwick
+* Copyright (c) 2020-2021, Benjamin F. Zwick. All Rights reserved.
 *
 * This file is part of MVox.
 *
-* MVox is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
-*
-* MVox is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with MVox.  If not, see <https://www.gnu.org/licenses/>.
+* MVox is free software: you can redistribute it and/or modify it
+* under the terms of the BSD 3-Clause License.
+* See file LICENSE for details.
 */
 
 #include "mvox.hpp"
@@ -49,7 +40,7 @@ int main(int argc, char *argv[])
       "**********************************************************************\n"
       << "MVox Mesh Voxelizer "
       << std::endl
-      << "Copyright (C) 2020 Benjamin F. Zwick"
+      << "Copyright (c) 2020-2021, Benjamin F. Zwick. All Rights reserved."
       << std::endl
       << "Version: "
       << MVOX_VERSION_MAJOR << "."
@@ -61,8 +52,8 @@ int main(int argc, char *argv[])
    std::cout
      << "\nThis program is distributed in the hope that it will be useful,\n"
      << "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
-     << "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the\n"
-     << "GNU General Public License for more details."
+     << "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"
+     << "See file LICENSE for more details."
      << std::endl;
 
    // ----------------------------------------------------------------------
