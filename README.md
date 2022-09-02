@@ -35,9 +35,8 @@ with the default options.
 For instructions on how to install ITK see
 https://itk.org/Wiki/ITK/Source#Linux_Package_Distributions.
 
-For example, to install ITK on Ubuntu 20.04:
+For example, to install ITK on Ubuntu 22.04:
 
-    sudo apt-get install cmake
     sudo apt-get install libinsighttoolkit4-dev
 
 ### Building MVox from source
@@ -49,7 +48,7 @@ Configure and make MVox in the
     cd ..
     mkdir build
     cd build
-    cmake -DMFEM_DIR=/opt/mfem/mfem-4.2 ../mvox
+    cmake -DMFEM_DIR=/opt/mfem/mfem-4.4 ../mvox
     make
     make install
 
