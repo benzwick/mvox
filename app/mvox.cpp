@@ -216,16 +216,41 @@ int main(int argc, char *argv[])
    // "3D-symmetric-matrix"  6  Unique components of a 3D symmetric matrix: Mxx Mxy Mxz Myy Myz Mzz
    // "3D-matrix"            9  Components of 3D matrix:                    Mxx Mxy Mxz Myx Myy Myz Mzx Mzy Mzz
    TensorImageFileReaderType::Pointer tensors_reader = TensorImageFileReaderType::New();
-   std::cout << "Reading NRRD tensors file: '" << tensors_ifile << "'... " << std::flush;
-   tensors_reader->SetFileName(tensors_ifile);
-   tensors_reader->Update();
-   TensorImageType::Pointer tensors_image = tensors_reader->GetOutput();
-   std::cout << "done." << std::endl;
+   TensorImageType::Pointer tensors_image;
+   if (strcmp(tensors_ifile, "") == 0)
+   {
+      if (strcmp(tensors_ofile, "") != 0)
+      {
+         MVOX_ERROR( "Tensor output requested but tensor input file not specified." );
+         return 1;
+      }
+      // else all good because no input and no output
+   }
+   else
+   {
+      if (strcmp(tensors_ofile, "") == 0)
+      {
+         MVOX_ERROR( "Tensor input exists but tensor output file not specified." );
+         return 1;
+      }
+      else // both input and ouput tensor files specified:
+      {
+         std::cout << "Reading NRRD tensors file: '" << tensors_ifile << "'... " << std::flush;
+         tensors_reader->SetFileName(tensors_ifile);
+         tensors_reader->Update();
+         tensors_image = tensors_reader->GetOutput();
+         std::cout << "done." << std::endl;
+      }
+   }
 
    // Image data
    short* masks = masks_image->GetBufferPointer();
    short* attributes = attributes_image->GetBufferPointer();
-   TensorPixelType* tensors = tensors_image->GetBufferPointer();
+   TensorPixelType* tensors;
+   if (strcmp(tensors_ifile, "") != 0)
+   {
+      tensors = tensors_image->GetBufferPointer();
+   }
 
    // ----------------------------------------------------------------------
    // Get information from *masks* image only
@@ -403,56 +428,56 @@ int main(int argc, char *argv[])
    // ----------------------------------------------------------------------
    // Tensors
 
-   // Define a finite element space on the mesh
-   int vdim = symmetric ? 6 : 9;
-   mfem::L2_FECollection tensors_fec(0, dim);
-   mfem::FiniteElementSpace tensors_fespace(&vox, &tensors_fec, vdim);
-
-   // Define grid functions for tensor components
-   mfem::GridFunction tensors_gf(&tensors_fespace);
-
-   std::cout << "Assigning tensor values... " << std::flush;
-   for (int vi = 0, ei = 0; vi < num_voxels; vi++)
+   if (strcmp(tensors_ifile, "") != 0)
    {
-      if (masks[vi] > 0)
+      // Define a finite element space on the mesh
+      int vdim = symmetric ? 6 : 9;
+      mfem::L2_FECollection tensors_fec(0, dim);
+      mfem::FiniteElementSpace tensors_fespace(&vox, &tensors_fec, vdim);
+
+      // Define grid functions for tensor components
+      mfem::GridFunction tensors_gf(&tensors_fespace);
+
+      std::cout << "Assigning tensor values... " << std::flush;
+      for (int vi = 0, ei = 0; vi < num_voxels; vi++)
       {
-         if (symmetric)
+         if (masks[vi] > 0)
          {
-            tensors_gf(tensors_fespace.DofToVDof(ei, 0)) = tensors[vi](0,0); // Mxx
-            tensors_gf(tensors_fespace.DofToVDof(ei, 1)) = tensors[vi](0,1); // Mxy
-            tensors_gf(tensors_fespace.DofToVDof(ei, 2)) = tensors[vi](0,2); // Mxz
-            tensors_gf(tensors_fespace.DofToVDof(ei, 3)) = tensors[vi](1,1); // Myy
-            tensors_gf(tensors_fespace.DofToVDof(ei, 4)) = tensors[vi](1,2); // Myz
-            tensors_gf(tensors_fespace.DofToVDof(ei, 5)) = tensors[vi](2,2); // Mzz
-            // Ensure that tensor is really symmetric
-            if (tensors_gf(tensors_fespace.DofToVDof(ei, 1)) != tensors[vi](1,0) ||
-                tensors_gf(tensors_fespace.DofToVDof(ei, 2)) != tensors[vi](2,0) ||
-                tensors_gf(tensors_fespace.DofToVDof(ei, 4)) != tensors[vi](2,1))
+            if (symmetric)
             {
-               MFEM_ABORT("Tensor at voxel " << vi << " is not symmetric!");
+               tensors_gf(tensors_fespace.DofToVDof(ei, 0)) = tensors[vi](0,0); // Mxx
+               tensors_gf(tensors_fespace.DofToVDof(ei, 1)) = tensors[vi](0,1); // Mxy
+               tensors_gf(tensors_fespace.DofToVDof(ei, 2)) = tensors[vi](0,2); // Mxz
+               tensors_gf(tensors_fespace.DofToVDof(ei, 3)) = tensors[vi](1,1); // Myy
+               tensors_gf(tensors_fespace.DofToVDof(ei, 4)) = tensors[vi](1,2); // Myz
+               tensors_gf(tensors_fespace.DofToVDof(ei, 5)) = tensors[vi](2,2); // Mzz
+               // Ensure that tensor is really symmetric
+               if (tensors_gf(tensors_fespace.DofToVDof(ei, 1)) != tensors[vi](1,0) ||
+                   tensors_gf(tensors_fespace.DofToVDof(ei, 2)) != tensors[vi](2,0) ||
+                   tensors_gf(tensors_fespace.DofToVDof(ei, 4)) != tensors[vi](2,1))
+               {
+                  MFEM_ABORT("Tensor at voxel " << vi << " is not symmetric!");
+               }
             }
+            else
+            {
+               tensors_gf(tensors_fespace.DofToVDof(ei, 0)) = tensors[vi](0,0); // Mxx
+               tensors_gf(tensors_fespace.DofToVDof(ei, 1)) = tensors[vi](0,1); // Mxy
+               tensors_gf(tensors_fespace.DofToVDof(ei, 2)) = tensors[vi](0,2); // Mxz
+               tensors_gf(tensors_fespace.DofToVDof(ei, 3)) = tensors[vi](1,0); // Myx
+               tensors_gf(tensors_fespace.DofToVDof(ei, 4)) = tensors[vi](1,1); // Myy
+               tensors_gf(tensors_fespace.DofToVDof(ei, 5)) = tensors[vi](1,2); // Myz
+               tensors_gf(tensors_fespace.DofToVDof(ei, 6)) = tensors[vi](2,0); // Mzx
+               tensors_gf(tensors_fespace.DofToVDof(ei, 7)) = tensors[vi](2,1); // Mzy
+               tensors_gf(tensors_fespace.DofToVDof(ei, 8)) = tensors[vi](2,2); // Mzz
+            }
+            ei++;
          }
-         else
-         {
-            tensors_gf(tensors_fespace.DofToVDof(ei, 0)) = tensors[vi](0,0); // Mxx
-            tensors_gf(tensors_fespace.DofToVDof(ei, 1)) = tensors[vi](0,1); // Mxy
-            tensors_gf(tensors_fespace.DofToVDof(ei, 2)) = tensors[vi](0,2); // Mxz
-            tensors_gf(tensors_fespace.DofToVDof(ei, 3)) = tensors[vi](1,0); // Myx
-            tensors_gf(tensors_fespace.DofToVDof(ei, 4)) = tensors[vi](1,1); // Myy
-            tensors_gf(tensors_fespace.DofToVDof(ei, 5)) = tensors[vi](1,2); // Myz
-            tensors_gf(tensors_fespace.DofToVDof(ei, 6)) = tensors[vi](2,0); // Mzx
-            tensors_gf(tensors_fespace.DofToVDof(ei, 7)) = tensors[vi](2,1); // Mzy
-            tensors_gf(tensors_fespace.DofToVDof(ei, 8)) = tensors[vi](2,2); // Mzz
-         }
-         ei++;
       }
-   }
-   MFEM_ASSERT(ei == vox.GetNE(), "Mismatch between number of tensors and elements");
-   std::cout << "done." << std::endl;
+      MFEM_ASSERT(ei == vox.GetNE(), "Mismatch between number of tensors and elements");
+      std::cout << "done." << std::endl;
 
-   // Save tensors to file
-   if (strcmp(tensors_ofile, "") != 0)
-   {
+      // Save tensors to file
       std::cout << "Saving tensors to file: '" << tensors_ofile << "'... " << std::flush;
       save_gridfunction(tensors_gf, tensors_ofile);
       std::cout << "done." << std::endl;
