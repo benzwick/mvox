@@ -56,9 +56,14 @@ jobs:
       working-directory: /home/runner/work/mvox/build
       run: make install
     - name: Test mvox
-      # TODO: move this to cmake
+      # TODO: move this to cmake/make test?
       run: |
-        mkdir /home/runner/work/mvox/test
-        cd /home/runner/work/mvox/test
-        wget https://github.com/mhalle/spl-brain-atlas/raw/master/slicer/volumes/imaging/A1_grayT1-1mm_resample.nrrd
-        mvox -box -imask A1_grayT1-1mm_resample.nrrd
+        cd /home/runner/work/mvox/mvox/examples
+        bash boxmesh.sh
+        
+    - name: Archive data
+      uses: actions/upload-artifact@v3
+      with:
+        name: examples
+        path: /home/runner/work/mvox/mvox/examples
+        retention-days: 5
