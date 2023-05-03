@@ -30,7 +30,7 @@ jobs:
         cd /home/runner/work/mfem/build
         pwd
     - name: Configure MFEM
-      run: cmake -DCMAKE_INSTALL_PREFIX=/opt/mfem/mfem-4.5 ../mfem-4.5.2
+      run: cmake -DCMAKE_INSTALL_PREFIX=/opt/mfem/mfem-4.5 /home/runner/work/mfem/mfem-4.5.2
     - name: make MFEM
       run: make -j
     - name: Install MFEM
