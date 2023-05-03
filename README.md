@@ -33,6 +33,8 @@ https://github.com/mfem/mfem/blob/master/INSTALL.
 
 For use with MVox it is sufficient to configure MFEM
 with the default options.
+However, to use on-the-fly gzip compression of mesh and grid function files,
+the zlib library option is required (`-DMFEM_USE_ZLIB=YES`).
 
 For example, configure and make MFEM 4.5 in the
 `../mfem-build` build directory relative to the
@@ -42,7 +44,7 @@ For example, configure and make MFEM 4.5 in the
     tar -zxf v4.5.2.tar.gz
     mkdir mfem-build
     cd mfem-build
-    cmake -DCMAKE_INSTALL_PREFIX=/opt/mfem/mfem-4.5 ../mfem-4.5.2
+    cmake -DCMAKE_INSTALL_PREFIX=/opt/mfem/mfem-4.5 -DMFEM_USE_ZLIB=YES ../mfem-4.5.2
     make -j4
     make install
 

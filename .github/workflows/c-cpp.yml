@@ -31,7 +31,7 @@ jobs:
       run: mkdir /home/runner/work/mfem/build
     - name: Configure MFEM
       working-directory: /home/runner/work/mfem/build
-      run: cmake -DCMAKE_INSTALL_PREFIX=/opt/mfem/mfem-4.5 /home/runner/work/mfem/mfem-4.5.2
+      run: cmake -DCMAKE_INSTALL_PREFIX=/opt/mfem/mfem-4.5 -DMFEM_USE_ZLIB=YES /home/runner/work/mfem/mfem-4.5.2
     - name: Make MFEM
       working-directory: /home/runner/work/mfem/build
       run: make -j4
