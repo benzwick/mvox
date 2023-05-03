@@ -67,6 +67,7 @@ int main(int argc, char *argv[])
 
    bool visualization = false;
    bool symmetric = false;
+   bool boxmesh = false;
 
    const int dim = 3;
 
@@ -105,6 +106,10 @@ int main(int argc, char *argv[])
                   "-sym", "--symmetric-tensors",
                   "-no-sym", "--no-symmetric-tensors",
                   "Enable or disable symmetric tensor output.");
+   args.AddOption(&boxmesh,
+                  "-box", "--box-mesh",
+                  "-no-box", "--no-box-mesh",
+                  "Create boxmesh using image dimensions.");
 
    // Image parameters
    args.AddOption(&nx,
@@ -355,8 +360,8 @@ int main(int argc, char *argv[])
          {
             for (x = 0; x < nx; x++)
             {
-               int mask = masks[i];
-               int attr = attributes[i];
+               int mask = boxmesh ? 1 : masks[i];
+               int attr = boxmesh ? 1 : attributes[i];
                if (mask > 0)
                {
                   if (attr < 1)
