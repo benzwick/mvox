@@ -20,15 +20,15 @@ jobs:
     - name: Download MFEM
       # NOTE: v4.5.2.tar.gz is extracted to mfem-4.5.2
       run: |
-        cd /home/runner/work/mvox
+        mkdir /home/runner/work/mfem
+        cd /home/runner/work/mfem
         wget https://github.com/mfem/mfem/archive/refs/tags/v4.5.2.tar.gz
         tar -zxf v4.5.2.tar.gz
     - name: Create MFEM build directory
       run: |
         mkdir build-mfem
-        cd build-mfem
-    - name: List files
-      run: pwd ; tree
+        cd /home/runner/work/mfem/build
+        pwd
     - name: Configure MFEM
       run: cmake -DCMAKE_INSTALL_PREFIX=/opt/mfem/mfem-4.5 ../mfem-4.5.2
     - name: make MFEM
