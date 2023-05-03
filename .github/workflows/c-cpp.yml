@@ -60,6 +60,7 @@ jobs:
       run: |
         cd /home/runner/work/mvox/mvox/examples
         bash boxmesh.sh
+        bash brain-tensors.sh
         
     - name: Archive data
       uses: actions/upload-artifact@v3
