@@ -26,7 +26,7 @@ jobs:
         tar -zxf v4.5.2.tar.gz
     - name: Create MFEM build directory
       run: |
-        mkdir build-mfem
+        mkdir /home/runner/work/mfem/build
         cd /home/runner/work/mfem/build
         pwd
     - name: Configure MFEM
