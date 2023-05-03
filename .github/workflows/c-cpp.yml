@@ -17,42 +17,47 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+    
+    - name: Create MFEM directory
+      run: mkdir /home/runner/work/mfem
     - name: Download MFEM
       # NOTE: v4.5.2.tar.gz is extracted to mfem-4.5.2
+      working-directory: /home/runner/work/mfem
       run: |
-        mkdir /home/runner/work/mfem
-        cd /home/runner/work/mfem
         wget https://github.com/mfem/mfem/archive/refs/tags/v4.5.2.tar.gz
         tar -zxf v4.5.2.tar.gz
     - name: Create MFEM build directory
-      run: |
-        mkdir /home/runner/work/mfem/build
-        cd /home/runner/work/mfem/build
-        pwd
+      run: mkdir /home/runner/work/mfem/build
     - name: Configure MFEM
+      working-directory: /home/runner/work/mfem/build
       run: cmake -DCMAKE_INSTALL_PREFIX=/opt/mfem/mfem-4.5 /home/runner/work/mfem/mfem-4.5.2
     - name: Make MFEM
-      run: make
+      working-directory: /home/runner/work/mfem/build
+      run: make -j
     - name: Install MFEM
+      working-directory: /home/runner/work/mfem/build
       run: make install
+      
     - name: Install ITK
       run: |
         sudo apt-get update
         sudo apt-get install libinsighttoolkit4-dev
+        
     - name: Create MVox build directory
-      run: |
-        mkdir /home/runner/work/mvox/build
-        cd /home/runner/work/mvox/build
+      run: mkdir /home/runner/work/mvox/build
     - name: Configure MVox
+      working-directory: /home/runner/work/mvox/build
       run: cmake -DMFEM_DIR=/opt/mfem/mfem-4.5 /home/runner/work/mvox/mvox
-    - name: make check
-      run: make check
-    - name: make distcheck
-      run: make distcheck
-    - name: make install
+    - name: Make MVox
+      working-directory: /home/runner/work/mvox/build
+      run: make -j
+    - name: Install MVox
+      working-directory: /home/runner/work/mvox/build
       run: make install
     - name: Test mvox
       # TODO: move this to cmake
       run: |
+        mkdir /home/runner/work/mvox/test
+        cd /home/runner/work/mvox/test
         wget https://github.com/mhalle/spl-brain-atlas/blob/master/slicer/volumes/imaging/A1_grayT1-1mm_resample.nrrd
         mvox -box -imask A1_grayT1-1mm_resample.nrrd
