@@ -2,6 +2,8 @@
 
 MVox is a tool for generating finite element meshes from image data.
 
+| __Build Status__ | [![build](https://github.com/benzwick/mvox/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/benzwick/mvox/actions/workflows/c-cpp.yml) |
+
 ## Downloading
 
 Clone the repository using [Git](https://git-scm.com):
