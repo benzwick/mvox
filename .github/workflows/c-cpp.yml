@@ -1,0 +1,41 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Download MFEM
+      run: wget https://github.com/mfem/mfem/archive/refs/tags/v4.5.2.tar.gz && tar -zxf v4.5.2.tar.gz
+    - name: Create MFEM build directory
+      run: mkdir build-mfem && cd build-mfem
+    - name: Configure MFEM
+      run: cmake -DCMAKE_INSTALL_PREFIX=/opt/mfem/mfem-4.5 ../v4.5.2
+    - name: make MFEM
+      run: make -j
+    - name: Install MFEM
+      run: make install
+    - name: Change to root directory
+      run: cd ..
+    - name: Install ITK
+      run: |
+        sudo apt-get update
+        sudo apt-get install libinsighttoolkit4-dev
+    - name: Create build directory
+      run: mkdir build-mvox && cd build-mvox
+    - name: Configure
+      run: cmake -DMFEM_DIR=/opt/mfem/mfem-4.5 ../mvox
+    - name: make check
+      run: make check
+    - name: make distcheck
+      run: make distcheck
+    - name: make install
+      run: make install
