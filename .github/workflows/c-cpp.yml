@@ -31,23 +31,28 @@ jobs:
         pwd
     - name: Configure MFEM
       run: cmake -DCMAKE_INSTALL_PREFIX=/opt/mfem/mfem-4.5 /home/runner/work/mfem/mfem-4.5.2
-    - name: make MFEM
-      run: make -j
+    - name: Make MFEM
+      run: make
     - name: Install MFEM
       run: make install
-    - name: Change to root directory
-      run: cd ..
     - name: Install ITK
       run: |
         sudo apt-get update
         sudo apt-get install libinsighttoolkit4-dev
-    - name: Create build directory
-      run: mkdir build-mvox && cd build-mvox
-    - name: Configure
-      run: cmake -DMFEM_DIR=/opt/mfem/mfem-4.5 ../mvox
+    - name: Create MVox build directory
+      run: |
+        mkdir /home/runner/work/mvox/build
+        cd /home/runner/work/mvox/build
+    - name: Configure MVox
+      run: cmake -DMFEM_DIR=/opt/mfem/mfem-4.5 /home/runner/work/mvox/mvox
     - name: make check
       run: make check
     - name: make distcheck
       run: make distcheck
     - name: make install
       run: make install
+    - name: Test mvox
+      # TODO: move this to cmake
+      run: |
+        wget https://github.com/mhalle/spl-brain-atlas/blob/master/slicer/volumes/imaging/A1_grayT1-1mm_resample.nrrd
+        mvox -box -imask A1_grayT1-1mm_resample.nrrd
