@@ -1,5 +1,5 @@
 #!/bin/bash
-# Create a mesh from a brain label map with diffusion tensors
+# Create a mesh from a brain label map with conductivity tensors estimated from diffusion-weighted imaging
 # The data for this example is available at https://zenodo.org/record/7687631
 # For further details, see the following publications:
 # - Zwick BF, Bourantas GC, Safdar S, Joldes GR, Hyde DE, Warfield SK, Wittek A, Miller K. Patient-specific solution of the electrocorticography forward problem in deforming brain. NeuroImage. 2022;263:119649, DOI: 10.1016/j.neuroimage.2022.119649.
