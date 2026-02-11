@@ -1,0 +1,53 @@
+name: Guix
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 1'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Guix
+      uses: PromyLOPh/guix-install-action@v1.4
+      with:
+        channels: |
+          (list (channel
+                 (name 'guix)
+                 (url "https://git.savannah.gnu.org/git/guix.git")
+                 (branch "master")))
+
+    - name: Lint packages
+      run: guix lint -L guix mfem mvox
+
+    - name: Build MFEM
+      run: guix build -L guix mfem
+
+    - name: Build mvox
+      run: guix build -L guix mvox
+
+    - name: Smoke test (from store)
+      run: $(guix build -L guix mvox)/bin/mvox --help
+
+    - name: Install mvox
+      run: guix install -L guix mvox
+
+    - name: Smoke test (installed)
+      run: mvox --help
+
+    - name: Test boxmesh
+      working-directory: examples
+      run: bash boxmesh.sh
+
+    - name: Test brain-tensors
+      working-directory: examples
+      run: bash brain-tensors.sh

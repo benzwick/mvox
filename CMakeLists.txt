@@ -26,6 +26,8 @@ set(CMAKE_CXX_STANDARD 14)      # C++14 is minimum required for ITK
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+include(GNUInstallDirs)
+
 # ------------------------------------------------------------------------------
 # Find ITK
 
@@ -68,7 +70,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 # ------------------------------------------------------------------------------
 # Project Library
 
-add_library(libmvox STATIC
+add_library(libmvox
     src/fileutil.cpp
     src/mfemutil.cpp
 )
@@ -94,7 +96,11 @@ target_link_libraries(mvox
     ${MFEM_LIBRARIES}
 )
 
-install(TARGETS mvox RUNTIME)
+install(TARGETS mvox RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(TARGETS libmvox
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 # ------------------------------------------------------------------------------
 # Information
