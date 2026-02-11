@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.10.2)
 # ------------------------------------------------------------------------------
 # Project name and version
 
-project(MVox VERSION 0.2.0)
+project(MVox VERSION 1.0.0)
 
 # Prohibit in-source build
 if (${PROJECT_SOURCE_DIR} STREQUAL ${PROJECT_BINARY_DIR})
