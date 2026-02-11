@@ -46,7 +46,7 @@ jobs:
         echo "LANG=en_US.utf8" >> $GITHUB_ENV
 
     - name: Update Guix
-      run: sudo -E guix pull
+      run: sudo -i /var/guix/profiles/per-user/root/current-guix/bin/guix pull
 
     - name: Lint packages
       run: guix lint -L guix mfem mvox
