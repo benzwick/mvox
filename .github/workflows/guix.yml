@@ -18,13 +18,35 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Install Guix
-      uses: PromyLOPh/guix-install-action@v1.4
-      with:
-        channels: |
-          (list (channel
-                 (name 'guix)
-                 (url "https://git.savannah.gnu.org/git/guix.git")
-                 (branch "master")))
+      run: |
+        # Download and extract Guix binary
+        wget -qO guix-binary.tar.xz "https://ci.guix.gnu.org/search/latest/archive?query=spec:tarball+status:success+system:x86_64-linux+guix-binary.tar.xz"
+        sudo tar xf guix-binary.tar.xz -C / --no-overwrite-dir
+
+        # Create build users
+        sudo groupadd --system guixbuild
+        for i in $(seq -w 1 10); do
+          sudo useradd -g guixbuild -G guixbuild -d /var/empty \
+            -s "$(which nologin)" -c "Guix build user $i" \
+            --system "guixbuilder${i}"
+        done
+
+        # Authorize substitutes
+        for f in /var/guix/profiles/per-user/root/current-guix/share/guix/*.pub; do
+          sudo /var/guix/profiles/per-user/root/current-guix/bin/guix archive --authorize < "$f"
+        done
+
+        # Start daemon directly (bypass systemd)
+        sudo /var/guix/profiles/per-user/root/current-guix/bin/guix-daemon \
+          --build-users-group=guixbuild --disable-chroot &
+
+        # Add guix to PATH
+        export GUIX_PATH=/var/guix/profiles/per-user/root/current-guix
+        echo "$GUIX_PATH/bin" >> $GITHUB_PATH
+        echo "LANG=en_US.utf8" >> $GITHUB_ENV
+
+    - name: Update Guix
+      run: sudo -E guix pull
 
     - name: Lint packages
       run: guix lint -L guix mfem mvox
