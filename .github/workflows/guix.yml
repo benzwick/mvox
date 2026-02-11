@@ -17,6 +17,13 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Guix cache
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/guix
+        key: guix-${{ hashFiles('guix/mvox/packages/*.scm') }}-week-${{ github.run_number }}
+        restore-keys: guix-
+
     - name: Install Guix
       run: |
         # Download and extract Guix binary
