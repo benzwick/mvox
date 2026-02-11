@@ -57,7 +57,7 @@ jobs:
       run: make -j4
     - name: Install MVox
       working-directory: /home/runner/work/mvox/build
-      run: make install
+      run: sudo make install
     - name: Test mvox
       # TODO: move this to cmake/make test?
       run: |
