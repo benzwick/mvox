@@ -1,7 +1,7 @@
 (define-module (mvox packages mfem)
   #:use-module (guix packages)
   #:use-module (guix gexp)
-  #:use-module (guix download)
+  #:use-module (guix git-download)
   #:use-module (guix build-system cmake)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (gnu packages compression))
@@ -12,12 +12,14 @@
     (version "4.5.2")
     (source
      (origin
-       (method url-fetch)
-       (uri (string-append
-             "https://github.com/mfem/mfem/archive/refs/tags/v"
-             version ".tar.gz"))
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/mfem/mfem")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
        (sha256
-        (base32 "lccfdm05lr1yqjlq44ccpx9yxpqyv11ly7c70c8k641r7l1pgmj0"))))
+        ;; TODO: compute with: guix hash -x --serializer=nar <checkout>
+        (base32 "0000000000000000000000000000000000000000000000000000"))))
     (build-system cmake-build-system)
     (arguments
      (list
