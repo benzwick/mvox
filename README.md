@@ -6,27 +6,86 @@ by converting image voxels to elements.
 | __Build Status__ | [![build](https://github.com/benzwick/mvox/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/benzwick/mvox/actions/workflows/c-cpp.yml) |
 | :--- | :--- |
 
-## Downloading
-
-Clone the repository using [Git](https://git-scm.com):
-
-    git clone https://github.com/benzwick/mvox.git
-
 ## Installing
+
+MVox can be installed [with GNU Guix](#installing-with-gnu-guix)
+or [built from source](#building-from-source).
+
+### Installing with GNU Guix
+
+MVox and all its dependencies can be installed with
+[GNU Guix](https://guix.gnu.org) using the
+[guix-mvox](https://github.com/benzwick/guix-mvox) channel.
+
+To add the channel, include the following in
+`~/.config/guix/channels.scm`:
+
+```scheme
+(cons (channel
+       (name 'mvox)
+       (url "https://github.com/benzwick/guix-mvox")
+       (branch "main"))
+      %default-channels)
+```
+
+Then pull and install:
+
+    guix pull
+    guix install mvox
+
+See the [guix-mvox README](https://github.com/benzwick/guix-mvox#readme)
+for more details.
+
+### Building from source
 
 MVox can be configured and installed using the
 [CMake](https://cmake.org)
 build system.
 
-### Dependencies
-
 MVox depends on the
 [MFEM](https://mfem.org)
 and
 [ITK](https://itk.org)
-libraries which must be installed first.
+libraries which must be installed first,
+either using [GNU Guix](#installing-dependencies-with-gnu-guix) or manually as described below.
 
-#### MFEM
+#### Installing dependencies with GNU Guix
+
+Use the [guix-mvox](https://github.com/benzwick/guix-mvox) channel
+to provide all build dependencies in a development shell.
+
+If the channel is already configured
+(see [Installing with GNU Guix](#installing-with-gnu-guix)):
+
+    guix shell -D mvox
+
+Or from a local checkout of the
+[guix-mvox](https://github.com/benzwick/guix-mvox) Guix channel repository:
+
+    guix shell -D -L /path/to/guix-mvox mvox
+
+This provides a development shell with MFEM, ITK, and all build tools.
+Then build MVox as described in
+[Building and installing MVox](#building-and-installing-mvox) below.
+
+#### Installing dependencies on Linux
+
+Install [CMake](https://cmake.org) and [ITK](https://itk.org)
+using your package manager.
+For instructions on how to install ITK see
+https://docs.itk.org/en/latest/download.html.
+
+For example, on Debian or Ubuntu:
+
+    sudo apt-get install cmake libinsighttoolkit5-dev
+
+On older distributions, use `libinsighttoolkit4-dev` instead.
+
+Then build and install MFEM and MVox as described in
+[Building and installing MFEM](#building-and-installing-mfem) and
+[Building and installing MVox](#building-and-installing-mvox) below.
+
+#### Building and installing MFEM
 
 For instructions on how to install MFEM see
 https://github.com/mfem/mfem/blob/master/INSTALL.
@@ -48,22 +107,16 @@ For example, configure and make MFEM 4.5 in the
     make -j4
     make install
 
-#### ITK
+#### Building and installing MVox
 
-For instructions on how to install ITK see
-https://itk.org/Wiki/ITK/Source#Linux_Package_Distributions.
+Clone the repository using [Git](https://git-scm.com):
 
-For example, to install ITK on Debian or Ubuntu:
-
-    sudo apt-get install libinsighttoolkit4-dev
-
-### Building MVox from source
+    git clone https://github.com/benzwick/mvox.git
 
 Configure and make MVox in the
 `../build` build directory relative to the
 `./mvox` source directory:
 
-    cd ..
     mkdir build
     cd build
     cmake -DMFEM_DIR=/opt/mfem/mfem-4.5 ../mvox
@@ -73,6 +126,8 @@ Configure and make MVox in the
 The `MFEM_DIR` variable is optional
 and can be used to specify the location
 of the MFEM library.
+When using [GNU Guix](#installing-dependencies-with-gnu-guix) for dependencies,
+CMake will find MFEM automatically.
 
 ## Running
 
@@ -86,7 +141,7 @@ To create a mesh and symmetric tensors grid function:
 To view a tensor components using GLVis:
 
     glvis -m mesh.mesh -g dti.gf.gz -gc 0
-    
+
 Example scripts and input data files can be found
 in the [examples](examples) directory.
 
