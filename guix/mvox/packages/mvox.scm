@@ -20,8 +20,7 @@
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        ;; TODO: compute with: guix hash -x --serializer=nar <checkout>
-        (base32 "0000000000000000000000000000000000000000000000000000"))))
+        (base32 "00gr07yzp7ff69f7fsr58r48wdbd69r55ks6msz8sc7gsbiadfyg"))))
     (build-system cmake-build-system)
     (arguments
      (list
