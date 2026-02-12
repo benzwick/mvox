@@ -138,7 +138,7 @@ To create a mesh and symmetric tensors grid function:
 
     mvox -imask brain_mask.nrrd -iattr label.nrrd -itensor dti.nrrd -omesh mesh.mesh -sym -otensor dti.gf.gz
 
-To view a tensor components using GLVis:
+To view tensor components using GLVis:
 
     glvis -m mesh.mesh -g dti.gf.gz -gc 0
 
