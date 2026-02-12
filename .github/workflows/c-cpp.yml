@@ -16,8 +16,15 @@ env:
 jobs:
   build:
 
-    runs-on: ubuntu-22.04
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 360
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            itk-pkg: libinsighttoolkit4-dev
+          - os: ubuntu-latest
+            itk-pkg: libinsighttoolkit5-dev
 
     steps:
     - uses: actions/checkout@v4
@@ -34,7 +41,7 @@ jobs:
       run: mkdir /home/runner/work/mfem/build
     - name: Configure MFEM
       working-directory: /home/runner/work/mfem/build
-      run: cmake -DCMAKE_INSTALL_PREFIX=/opt/mfem/mfem-4.5 -DMFEM_USE_ZLIB=YES /home/runner/work/mfem/mfem-4.5.2
+      run: cmake -DCMAKE_INSTALL_PREFIX=/opt/mfem/mfem-4.5 -DCMAKE_CXX_FLAGS="-include cstdint" -DMFEM_USE_ZLIB=YES /home/runner/work/mfem/mfem-4.5.2
     - name: Make MFEM
       working-directory: /home/runner/work/mfem/build
       run: make -j4
@@ -45,7 +52,7 @@ jobs:
     - name: Install ITK
       run: |
         sudo apt-get update
-        sudo apt-get install libinsighttoolkit4-dev
+        sudo apt-get install -y ${{ matrix.itk-pkg }}
         
     - name: Create MVox build directory
       run: mkdir /home/runner/work/mvox/build
@@ -68,6 +75,6 @@ jobs:
     - name: Archive data
       uses: actions/upload-artifact@v4
       with:
-        name: examples
+        name: examples-${{ matrix.os }}
         path: /home/runner/work/mvox/mvox/examples
         retention-days: 5
