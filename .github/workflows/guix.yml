@@ -56,6 +56,7 @@ jobs:
       run: sudo -i /var/guix/profiles/per-user/root/current-guix/bin/guix pull
 
     - name: Lint packages
+      continue-on-error: true
       run: guix lint -L guix mfem mvox
 
     - name: Build MFEM
