@@ -22,15 +22,9 @@
     (build-system cmake-build-system)
     (arguments
      (list
-      #:phases
-      #~(modify-phases %standard-phases
-          (add-after 'unpack 'fix-missing-includes
-            (lambda _
-              (substitute* "general/hash.hpp"
-                (("#ifndef MFEM_HASH")
-                 "#include <cstdint>\n#ifndef MFEM_HASH")))))
       #:configure-flags
-      #~(list "-DBUILD_SHARED_LIBS=YES"
+      #~(list "-DCMAKE_CXX_FLAGS=-include cstdint"
+              "-DBUILD_SHARED_LIBS=YES"
               "-DMFEM_USE_ZLIB=YES"
               "-DMFEM_USE_EXCEPTIONS=YES"
               "-DMFEM_ENABLE_TESTING=NO"
