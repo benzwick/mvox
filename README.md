@@ -1,7 +1,9 @@
 # MVox Mesh Voxelizer
 
 [![C/C++ CI](https://github.com/benzwick/mvox/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/benzwick/mvox/actions/workflows/c-cpp.yml)
-[![Guix](https://github.com/benzwick/guix-mvox/actions/workflows/guix.yml/badge.svg)](https://github.com/benzwick/guix-mvox/actions/workflows/guix.yml)
+[![Guix Install (local)](https://github.com/benzwick/guix-mvox/actions/workflows/guix-install-local.yml/badge.svg)](https://github.com/benzwick/guix-mvox/actions/workflows/guix-install-local.yml)
+[![Guix Install (channel)](https://github.com/benzwick/guix-mvox/actions/workflows/guix-install-channel.yml/badge.svg)](https://github.com/benzwick/guix-mvox/actions/workflows/guix-install-channel.yml)
+[![Guix Build from Source](https://github.com/benzwick/guix-mvox/actions/workflows/guix-build-source.yml/badge.svg)](https://github.com/benzwick/guix-mvox/actions/workflows/guix-build-source.yml)
 
 MVox is a tool for generating structured finite element meshes from image data
 by converting image voxels to elements.
