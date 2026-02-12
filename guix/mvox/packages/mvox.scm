@@ -26,7 +26,7 @@
         ;; tagging releases).
         #~(delete-file-recursively "guix"))
        (sha256
-        (base32 "0000000000000000000000000000000000000000000000000000"))))
+        (base32 "1gka4nlg131dnrya6xzlzjpjd5c1crsgwvgzapls82jfg6pdh0gd"))))
     (build-system cmake-build-system)
     (arguments
      (list
