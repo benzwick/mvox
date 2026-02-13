@@ -1,9 +1,9 @@
 # MVox Mesh Voxelizer
 
 [![C/C++ CI](https://github.com/benzwick/mvox/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/benzwick/mvox/actions/workflows/c-cpp.yml)
-[![Guix Install (local)](https://github.com/benzwick/guix-mvox/actions/workflows/guix-install-local.yml/badge.svg)](https://github.com/benzwick/guix-mvox/actions/workflows/guix-install-local.yml)
-[![Guix Install (channel)](https://github.com/benzwick/guix-mvox/actions/workflows/guix-install-channel.yml/badge.svg)](https://github.com/benzwick/guix-mvox/actions/workflows/guix-install-channel.yml)
-[![Guix Build from Source](https://github.com/benzwick/guix-mvox/actions/workflows/guix-build-source.yml/badge.svg)](https://github.com/benzwick/guix-mvox/actions/workflows/guix-build-source.yml)
+[![Guix Build](https://github.com/benzwick/guix-mvox/actions/workflows/guix-build.yml/badge.svg)](https://github.com/benzwick/guix-mvox/actions/workflows/guix-build.yml)
+[![Guix Channel](https://github.com/benzwick/guix-mvox/actions/workflows/guix-channel.yml/badge.svg)](https://github.com/benzwick/guix-mvox/actions/workflows/guix-channel.yml)
+[![Guix Shell](https://github.com/benzwick/guix-mvox/actions/workflows/guix-shell.yml/badge.svg)](https://github.com/benzwick/guix-mvox/actions/workflows/guix-shell.yml)
 
 MVox is a tool for generating structured finite element meshes from image data
 by converting image voxels to elements.
