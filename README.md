@@ -4,10 +4,12 @@
 [![Guix Build](https://github.com/benzwick/guix-mvox/actions/workflows/guix-build.yml/badge.svg)](https://github.com/benzwick/guix-mvox/actions/workflows/guix-build.yml)
 [![Guix Channel](https://github.com/benzwick/guix-mvox/actions/workflows/guix-channel.yml/badge.svg)](https://github.com/benzwick/guix-mvox/actions/workflows/guix-channel.yml)
 [![Guix Shell](https://github.com/benzwick/guix-mvox/actions/workflows/guix-shell.yml/badge.svg)](https://github.com/benzwick/guix-mvox/actions/workflows/guix-shell.yml)
+[![Documentation](https://github.com/benzwick/mvox/actions/workflows/documentation.yml/badge.svg)](https://benzwick.github.io/mvox/)
 
 MVox is a tool for generating structured finite element meshes from image data
 by converting image voxels to elements.
 
+- **[Documentation](https://benzwick.github.io/mvox/)**
 - **[Installing](#installing)** — install with GNU Guix or build from source
 - **[Running](#running)** — usage examples and CLI options
 - **[Examples](examples)** — example scripts and input data
