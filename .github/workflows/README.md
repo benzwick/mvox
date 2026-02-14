@@ -16,4 +16,4 @@ To manually trigger a docs rebuild, dispatch the C/C++ CI workflow.
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
 | `c-cpp.yml` | push, PR, weekly schedule, manual | Build and test MVox |
-| `docs.yml` | C/C++ CI success on `main` | Build and deploy documentation |
+| `documentation.yml` | C/C++ CI success on `main` | Build and deploy documentation |
