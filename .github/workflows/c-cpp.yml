@@ -28,7 +28,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Create MFEM directory
       run: mkdir /home/runner/work/mfem
     - name: Download MFEM
@@ -48,12 +48,12 @@ jobs:
     - name: Install MFEM
       working-directory: /home/runner/work/mfem/build
       run: make install
-      
+
     - name: Install ITK
       run: |
         sudo apt-get update
         sudo apt-get install -y ${{ matrix.itk-pkg }}
-        
+
     - name: Create MVox build directory
       run: mkdir /home/runner/work/mvox/build
     - name: Configure MVox
@@ -71,7 +71,7 @@ jobs:
         cd /home/runner/work/mvox/mvox/examples
         bash boxmesh.sh
         bash brain-tensors.sh
-        
+
     - name: Archive data
       uses: actions/upload-artifact@v4
       with:
