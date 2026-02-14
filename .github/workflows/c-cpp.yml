@@ -1,6 +1,6 @@
 # Build and test MVox.
 #
-# On success, the Documentation workflow (docs.yml) runs automatically
+# On success, the Documentation workflow (documentation.yml) is called
 # to build and deploy docs to GitHub Pages.
 
 name: C/C++ CI
@@ -13,6 +13,12 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 0 * * 1'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  actions: read
 
 env:
   ACTIONS_RUNNER_DEBUG: true
@@ -83,3 +89,8 @@ jobs:
         name: examples-${{ matrix.os }}
         path: /home/runner/work/mvox/mvox/examples
         retention-days: 5
+
+  docs:
+    needs: build
+    if: github.event_name != 'pull_request'
+    uses: ./.github/workflows/documentation.yml
