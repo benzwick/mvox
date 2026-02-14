@@ -1,3 +1,8 @@
+# Build and test MVox.
+#
+# On success, the Documentation workflow (docs.yml) runs automatically
+# to build and deploy docs to GitHub Pages.
+
 name: C/C++ CI
 
 on:

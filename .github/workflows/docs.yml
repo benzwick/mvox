@@ -1,3 +1,13 @@
+# Build and deploy documentation to GitHub Pages.
+#
+# This workflow runs after C/C++ CI completes successfully on main.
+# It downloads example artifacts (NRRD inputs + VTK meshes) produced
+# by CI, captures screenshots using 3D Slicer, builds Sphinx docs,
+# and deploys to GitHub Pages.
+#
+# To manually trigger a docs rebuild, dispatch the C/C++ CI workflow.
+# This workflow will run automatically when CI finishes.
+
 name: Documentation
 
 on:
@@ -5,7 +15,6 @@ on:
     workflows: ["C/C++ CI"]
     types: [completed]
     branches: [main]
-  workflow_dispatch:
 
 permissions:
   contents: read
@@ -25,9 +34,7 @@ env:
 jobs:
   docs:
     runs-on: ubuntu-latest
-    if: >
-      github.event_name == 'workflow_dispatch' ||
-      github.event.workflow_run.conclusion == 'success'
+    if: github.event.workflow_run.conclusion == 'success'
     timeout-minutes: 30
 
     environment:
